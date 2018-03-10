@@ -1,0 +1,26 @@
+#This is a ".env" environment variable template. Copy or rename this file
+#as ".env and fill in all of the properties in order to run the application
+
+# reference these in your code with process.env.[VariableName]
+# note: .env is a shell file so there can't be spaces around =
+
+#Flickr API details
+IMG_API=https://api.flickr.com/services
+API_KEY=your-flickr-api-code
+API_SECRET=your-secret-flicker-code
+
+#mongo database credentials for storing the historical search data
+MONGO_HOST=localhost
+MONGO_PORT=27017
+MONGO_DB=db-name
+MONGO_USER=user
+MONGO_PASS=password
+MONGO_COLLECTION=your-collection
+
+#Variable to switch on dummy search responses and prevent too many api calls during development
+#API MODE is either 'live' or 'dummy'
+API_MODE=live
+
+#The server host url - used to construct full URL links for API history
+SERVER_URL=https://earthy-brace.glitch.me
+

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Flickr Findr</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+    <script src="https://unpkg.com/getlibs"></script>
+  </head>
+  <body>
+    <div id="app">
+      <section class="hero is-primary">
+        <div class="hero-body">
+          <div class="container">
+            <h1 class="title">
+              Flickr Findr
+            </h1>
+            <h2 class="subtitle">
+              A simple image search abstraction layer proof of concept
+            </h2>
+          </div>
+        </div>
+      </section>
+      <section class="section">
+        <h1 class="title">
+          About
+        </h1>
+        <p>
+          This webpage provides a simple front-end to a image search abstraction microservice that was built as a project for 
+          <a href="http://www.freecodecamp.org">Freecodecamp</a>.
+        </p>
+        <div class="content">
+          <table class="tabel">
+            <tbodby>
+              <tr>
+                <td>
+                  <span class="tag is-info">Searching:</span> 
+                </td>
+                <td>
+                  https://flickr-findr.glitch.me/search/<b><em>:search-text</em></b>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="tag is-info">Search History:</span> 
+                </td>
+                <td>
+                  https://flickr-findr.glitch.me/history/
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="tag is-info">Optional settings:</span> 
+                </td>
+                <td>
+                  The following parameters can also be included as a query string at the end of each url:
+                  <ul>
+                    <li><b>per_page:</b> The number of results per page. Defaults to 10 if not included</li>
+                    <li><b>offset:</b></li> The number of pages to offset. Defaults to page 1.
+                  </ul>
+                </td>
+              </tr>
+            </tbodby>
+          </table>
+        </div>
+      </section>
+      <section class="section">
+        <article class="message is-primary">
+          <div class="message-header">
+            <p>Search</p>
+            <label class="checkbox">
+              <input type="checkbox" v-model="searchEnabled">
+              Enable
+            </label>
+          </div>
+          <transition name="fade">
+            <div class="message-body" v-show="searchEnabled">
+              <div class="columns">
+                <div class="column">
+                  Search Text
+                  <input class="input" type="text" placeholder="Text input" v-model="searchText">
+                </div>
+                <div class="column is-3">
+                  Items Per Page
+                  <div class="field has-addons">
+                    <div class="control is-expanded">
+                      <input class="input" type="text" v-model.number="searchPerPageValue">
+                    </div>
+                    <div class="control">
+                      <a class="button is-info" v-on:click="searchPerPageValue = Math.max(1, searchPerPageValue - 1)">
+                        Down
+                      </a>
+                    </div>
+                    <div class="control">
+                      <a class="button is-info" v-on:click="searchPerPageValue = searchPerPageValue ?  searchPerPageValue + 1 : 1">
+                        Up
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="column is-3">
+                  Page Number
+                  <div class="field has-addons">
+                    <div class="control is-expanded">
+                      <input class="input" type="text"  v-model.number="searchPageOffset">
+                    </div>
+                    <div class="control">
+                      <a class="button is-info button-is-disabled" v-on:click="searchPageOffset = Math.max(1, searchPageOffset - 1)">
+                        Down
+                      </a>
+                    </div>
+                    <div class="control">
+                      <a class="button is-info" v-on:click="searchPageOffset = searchPageOffset ?  searchPageOffset + 1 : 1">
+                        Up
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="columns">
+                <div class="column is-12">
+                  Running Query:
+                  <input class="input" type="text" v-model="computedSearchValue" readonly>
+                </div>
+              </div>
+              <div class="columns">
+                <div class="column is-12">
+                  Results
+                  <div class="tabs is-boxed">
+                    <ul>
+                      <li v-bind:class="{ 'is-active': searchResultTabIsRaw }" v-on:click="searchResultTab = 'raw'">
+                        <a>JSON</a>
+                      </li>
+                      <li v-bind:class="{ 'is-active': searchResultTabIsFormatted }" v-on:click="searchResultTab = 'card'">
+                        <a>Visualise</a>
+                      </li>
+                    </ul>
+                  </div>
+                  <div v-if="searchResultTabIsRaw">
+                    <textarea class="textarea is-small" v-bind:rows="searchResultHeight" readonly>{{ searchResult }}</textarea>
+                  </div>
+                  <div v-if="searchResultTabIsFormatted && !searchResultsValid">
+                    <input class="input" type="text" readonly>
+                  </div>
+                  <div v-if="searchResultTabIsFormatted && searchResultsValid">
+                    <div class="columns" v-for="sRow in searchResultRows">
+                      <div class="column is-6" v-for="sItem in sRow">
+                        <article class="media">
+                          <figure class="media-left">
+                            <figure class="image is-128x128">
+                              <img v-bind:src="sItem.url_small">
+                            </figure>
+                          </figure>
+                          <div class="media-content">
+                            <div class="content">
+                              <p>
+                                <strong><a v-bind:href="sItem.flickr_page">Go to Flicrk Image Page</a></strong>
+                                <br>
+                                {{ sItem.alt_text }}
+                              </p>
+                            </div>
+                          </div>
+                        </article>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </transition>
+        </article>
+        <article class="message is-info">
+          <div class="message-header">
+            <p>History</p>
+            <label class="checkbox">
+              <input type="checkbox" v-model="historyEnabled">
+              Enable
+            </label>
+          </div>
+          <transition name="fade">
+            <div class="message-body" v-show="historyEnabled">
+              <div class="columns">
+                <div class="column is-3 is-offset-6">
+                  Items Per Page
+                  <div class="field has-addons">
+                    <div class="control is-expanded">
+                      <input class="input" type="text" v-model.number="historyPerPageValue">
+                    </div>
+                    <div class="control">
+                      <a class="button is-info" v-on:click="historyPerPageValue = Math.max(1, historyPerPageValue - 1)">
+                        Down
+                      </a>
+                    </div>
+                    <div class="control">
+                      <a class="button is-info" v-on:click="historyPerPageValue = historyPerPageValue ?  historyPerPageValue + 1 : 1">
+                        Up
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="column is-3">
+                  Page Number
+                  <div class="field has-addons">
+                    <div class="control is-expanded">
+                      <input class="input" type="text"  v-model.number="historyPageOffset">
+                    </div>
+                    <div class="control">
+                      <a class="button is-info" v-on:click="historyPageOffset = Math.max(1, historyPageOffset - 1)">
+                        Down
+                      </a>
+                    </div>
+                    <div class="control">
+                      <a class="button is-info" v-on:click="historyPageOffset = historyPageOffset ?  historyPageOffset + 1 : 1">
+                        Up
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="columns">
+                <div class="column is-12">
+                  Running History Query:
+                  <input class="input" type="text" v-model="computedHistoryValue" readonly>
+                </div>
+              </div>
+              <div class="columns">
+                <div class="column is-12">
+                  Results
+                  <textarea class="textarea is-small" v-bind:rows="historyResultHeight" readonly>{{ historyResult }}</textarea>
+                </div>
+              </div>
+            </div>
+          </transition>
+        </article>
+      </section>
+    </div>
+    <style>
+      .fade-enter-active, .fade-leave-active {
+        transition: opacity .5s;
+      }
+      .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+        opacity: 0;
+      }
+      .button-is-disabled {
+        disabled: true
+      }
+    </style>
+    <script>
+        System.import('./index.js');
+    </script> 
+  </body>
+</html>
