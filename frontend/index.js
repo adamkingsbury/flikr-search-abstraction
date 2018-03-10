@@ -108,7 +108,7 @@ var app = new Vue({
       var validResult = false;
       if (this.searchText.length > 0) {
         validResult = true;
-        result += "https://earthy-brace.glitch.me/search/" +  encodeURI(this.searchText) ;
+        result += "https://flickr-findr.glitch.me/search/" +  encodeURI(this.searchText) ;
         this.searchPerPageValue > 0 || this.searchPageOffset > 0 ? result += "?" : result +="";
         this.searchPerPageValue > 0 ? result += "per_page=" + this.searchPerPageValue : result +="";
         this.searchPerPageValue > 0 && this.searchPageOffset > 0 ? result += "&" : result +="";
@@ -128,7 +128,7 @@ var app = new Vue({
     }, debounceRate),
     
     computeHistory: function (){
-      var result = "https://earthy-brace.glitch.me/history";
+      var result = "https://flickr-findr.glitch.me/history";
       if (this.historyPerPageValue > 0 || this.historyPageOffset > 0) result += "?";
       if (this.historyPerPageValue > 0) result += "per_page=" + this.historyPerPageValue;
       if (this.historyPerPageValue > 0 && this.historyPageOffset > 0) result += "&";
